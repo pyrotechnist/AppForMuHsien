@@ -21,6 +21,11 @@ import android.widget.Toast;
 
 import com.longyuan.appformuhsien.injection.DaggerNetworkComponent;
 import com.longyuan.appformuhsien.injection.NetworkModule;
+import com.longyuan.appformuhsien.pojo.Story;
+import com.longyuan.appformuhsien.storydetail.StoryDetailActivity;
+import com.longyuan.appformuhsien.utils.OnItemClickListener;
+import com.longyuan.appformuhsien.utils.StoryListAdapter;
+import com.longyuan.appformuhsien.utils.StoryPagerAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,17 +34,21 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+
+import static com.longyuan.appformuhsien.storydetail.StoryDetailActivity.EXTRA_STORY_ID;
+import static com.longyuan.appformuhsien.storydetail.StoryDetailActivity.USE_VOLLEY;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    static final Map<Integer,String> mStories = new HashMap<Integer,String>() {{
-        put(0,"鬼故事");
-        put(1,"生活中的佛法");
-        put(2,"輪迴小故事");
-        put(3,"歷史小故事");
+    static final List<Story> mStories = new ArrayList<Story>() {{
+        add(new Story("1","鬼故事","https://image.jimcdn.com/app/cms/image/transf/none/path/s15c9ef97e6bf0b66/image/ib8b6bf5a5f687f7c/version/1513689979/image.jpg"));
+        add(new Story("2","生活中的佛法","https://image.jimcdn.com/app/cms/image/transf/none/path/s15c9ef97e6bf0b66/image/if2b89d6d526da9e7/version/1514316612/image.jpg"));
+        add(new Story("3","輪迴小故事","https://image.jimcdn.com/app/cms/image/transf/none/path/s15c9ef97e6bf0b66/image/i6dfb057ee1a6882c/version/1513693386/image.jpg"));
+        add(new Story("4","歷史小故事","https://image.jimcdn.com/app/cms/image/transf/none/path/s15c9ef97e6bf0b66/image/i91b0de0af84a8385/version/1514028055/image.jpg"));
     }};
 
 
@@ -50,6 +59,10 @@ public class MainActivity extends AppCompatActivity
     ViewPager viewPagerTopStories;
 
     private Menu mMenu;
+
+    private StoryListAdapter mStoryListAdapter;
+
+    private StoryPagerAdapter mTopStoriesAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +77,14 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });*/
+        ButterKnife.bind(this);
 
         DaggerNetworkComponent.builder()
                 .networkModule(new NetworkModule("https://supportive-dharma.jimdo.com/blog/",getApplicationContext()))
                 .build().inject(this);
 
         setRecyclerView();
-        //setupViewPager();
+        setupViewPager();
         setupNavigationView();
     }
 
@@ -85,6 +99,68 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setRecyclerView() {
+
+        List<Story> storyList= new ArrayList();
+
+        mStoryListAdapter = new StoryListAdapter(this,mStories);
+
+
+        storyList = mStories;
+        mStoryList.setAdapter(mStoryListAdapter);
+
+        mStoryList.setLayoutManager(new LinearLayoutManager(mStoryList.getContext()));
+
+        mStoryList.setNestedScrollingEnabled(false);
+
+        DividerItemDecoration horizontalDecoration = new DividerItemDecoration(mStoryList.getContext(),
+                DividerItemDecoration.VERTICAL);
+
+        mStoryListAdapter.setOnItemClickListener(new OnItemClickListener.OnStoryItemClickListener() {
+            @Override
+            public void onItemClick(Story item) {
+                Toast.makeText(getApplicationContext(),item.getTitle(),Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(getApplicationContext(),StoryDetailActivity.class);
+                intent.putExtra(EXTRA_STORY_ID, item.getId());
+
+                intent.putExtra(USE_VOLLEY, false);
+                startActivity(intent);
+
+            }
+
+            @Override
+            public void onItemLongClick(Story item, int position) {
+
+            }
+        });
+
+    }
+
+    private void setupViewPager(){
+
+        List<Story> topStories = new ArrayList<>();
+
+        mTopStoriesAdapter = new StoryPagerAdapter(this,mStories);
+
+        mTopStoriesAdapter.setOnItemClickListener(new OnItemClickListener.OnStoryItemClickListener() {
+            @Override
+            public void onItemClick(Story item) {
+                Toast.makeText(getApplicationContext(),item.getTitle(),Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(getApplicationContext(),StoryDetailActivity.class);
+                intent.putExtra(EXTRA_STORY_ID, item.getId());
+
+                intent.putExtra(USE_VOLLEY, false);
+                startActivity(intent);
+
+            }
+
+            @Override
+            public void onItemLongClick(Story item, int position) {
+
+            }
+        });
+
+
+        viewPagerTopStories.setAdapter(mTopStoriesAdapter);
 
 
     }
@@ -113,10 +189,10 @@ public class MainActivity extends AppCompatActivity
         mMenu.add(Menu.NONE, 1,2, mStories.get(2));
         mMenu.add(Menu.NONE, 1, 3, mStories.get(3));*/
 
-        for (Map.Entry<Integer,String> entry : mStories.entrySet()) {
+      /*  for (Map.Entry<Integer,String> entry : mStories.entrySet()) {
 
             mMenu.add(0, entry.getKey(),entry.getKey(), entry.getValue());
-        }
+        }*/
 
        /* mStories.forEach(new Consumer<String>() {
                           @Override
@@ -146,7 +222,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == 1) {
-            Toast.makeText(this,mStories.get(0),Toast.LENGTH_LONG).show();
+            //Toast.makeText(this,mStories.get(0),Toast.LENGTH_LONG).show();
             return true;
         }
 

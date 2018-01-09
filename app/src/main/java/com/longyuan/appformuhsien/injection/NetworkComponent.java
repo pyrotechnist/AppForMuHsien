@@ -1,6 +1,7 @@
 package com.longyuan.appformuhsien.injection;
 
 import com.longyuan.appformuhsien.MainActivity;
+import com.longyuan.appformuhsien.storydetail.StoryDetailActivity;
 
 import javax.inject.Singleton;
 
@@ -15,5 +16,7 @@ import dagger.Component;
 public interface NetworkComponent {
 
     void inject(MainActivity mainActivity);
+
+    void inject(StoryDetailActivity storyDetailActivity);
 
 }
